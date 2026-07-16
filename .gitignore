@@ -104,3 +104,10 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Ignore the Packages folder, except for the manifest files and the resolver package
+/[Pp]ackages/*
+!/[Pp]ackages/manifest.json
+!/[Pp]ackages/vpm-manifest.json
+!/[Pp]ackages/packages-lock.json
+!/[Pp]ackages/com.vrchat.core.vpm-resolver
