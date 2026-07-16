@@ -1,0 +1,20 @@
+{
+    "name": "dev.yamachu.kurogo.ft.editor",
+    "rootNamespace": "",
+    "references": [
+        "dev.yamachu.kurogo.ft.runtime",
+        "dev.yamachu.kurogo.core.editor",
+        "nadena.dev.ndmf"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

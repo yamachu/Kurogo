@@ -1,0 +1,23 @@
+{
+    "name": "dev.yamachu.kurogo.core.editor",
+    "rootNamespace": "",
+    "references": [
+        "nadena.dev.ndmf",
+        "AnimatorAsCode.V1",
+        "nadena.dev.modular-avatar.core"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "VRCSDKBase.dll",
+        "VRCSDK3A.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

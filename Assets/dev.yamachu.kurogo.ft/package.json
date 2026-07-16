@@ -1,0 +1,21 @@
+{
+  "name": "dev.yamachu.kurogo.ft",
+  "displayName": "Kurogo FT",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "Non-destructive OSC face-tracking blendshape driver, generated at avatar build time via NDMF. Built on Kurogo Core.",
+  "author": {
+    "name": "yamachu"
+  },
+  "vpmDependencies": {
+    "dev.yamachu.kurogo.core": ">=0.1.0 <1.0.0-a",
+    "nadena.dev.ndmf": ">=1.14.0 <2.0.0-a"
+  },
+  "samples": [
+    {
+      "displayName": "Face Tracking Examples",
+      "description": "Example definition CSVs (required columns only, and one showing Min/Max/InputMin/InputMax/Smoothing/multi-target).",
+      "path": "Samples~/FaceTrackingExamples"
+    }
+  ]
+}

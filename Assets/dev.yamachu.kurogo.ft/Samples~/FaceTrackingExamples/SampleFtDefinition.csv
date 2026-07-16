@@ -1,0 +1,5 @@
+# Tutorial_Robot_Avatar_Dynamics_Demo_v1をベースとしたパラメータ
+OSCParameter,MeshName,BlendShapeName
+FT/JawOpen,Body,mouth-open
+FT/EyeBlinkLeft,Body,blink_left
+FT/EyeBlinkRight,Body,blink_right

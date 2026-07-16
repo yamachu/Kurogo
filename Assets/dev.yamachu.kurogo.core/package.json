@@ -1,0 +1,15 @@
+{
+  "name": "dev.yamachu.kurogo.core",
+  "displayName": "Kurogo Core",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "Reusable NDMF-time animator generation engine: drives avatar properties from float parameters via Direct blend trees, attached non-destructively with Modular Avatar. Library only - not an NDMF plugin by itself.",
+  "author": {
+    "name": "yamachu"
+  },
+  "vpmDependencies": {
+    "nadena.dev.ndmf": ">=1.14.0 <2.0.0-a",
+    "nadena.dev.modular-avatar": ">=1.17.0 <2.0.0-a",
+    "dev.hai-vr.animator-as-code.v1": ">=1.2.0"
+  }
+}

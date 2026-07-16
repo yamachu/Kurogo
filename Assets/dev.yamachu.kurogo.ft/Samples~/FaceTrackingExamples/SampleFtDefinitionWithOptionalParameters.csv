@@ -1,0 +1,10 @@
+# Tutorial_Robot_Avatar_Dynamics_Demo_v1をベースとしたパラメータ
+# Min/Max/InputMin/InputMaxを使った例。列の順番は自由に並べ替えられる。
+# 下2行(FT/BrowUpDown)は「1つのOSCParameterが複数のBlendShapeをまとめて駆動する」例。
+# FT/JawOpenはSmoothing列の例（0.8でスムージングを効かせる）。他の行はSmoothing列を空にし、スムージングなしのまま。
+OSCParameter,MeshName,BlendShapeName,InputMin,InputMax,Min,Max,Smoothing
+FT/JawOpen,Body,mouth-open,0,1,0,60,0.8
+FT/EyeBlinkLeft,Body,blink_left,0.1,0.9,0,50,
+FT/EyeBlinkRight,Body,blink_right,0.1,0.9,0,50,
+FT/BrowUpDown,Body,lowerlid_left,0,1,0,100,
+FT/BrowUpDown,Body,lowerlid_right,0,1,0,100,
