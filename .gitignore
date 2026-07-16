@@ -111,3 +111,7 @@ InitTestScene*.unity*
 !/[Pp]ackages/vpm-manifest.json
 !/[Pp]ackages/packages-lock.json
 !/[Pp]ackages/com.vrchat.core.vpm-resolver
+
+# Ignore VRChat Avatar project default Assets
+/[Aa]ssets/XR
+/[Aa]ssets/XR.meta
