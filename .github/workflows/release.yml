@@ -1,0 +1,150 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Which package to release (used only for manual runs, not tag pushes)"
+        type: choice
+        options:
+          - core
+          - ft
+  push:
+    tags:
+      - "kurogo-core-v*"
+      - "kurogo-ft-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-packages:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        unity-version:
+          # - "2022.3.23f1"
+          - "2022.3.22f1"
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Resolve target package
+        shell: bash
+        run: |
+          REF="${{ github.ref_name }}"
+          if [[ "$REF" == kurogo-core-v* ]]; then
+            PACKAGE_DIR="Assets/dev.yamachu.kurogo.core"
+            PACKAGE_LABEL="dev.yamachu.kurogo.core"
+          elif [[ "$REF" == kurogo-ft-v* ]]; then
+            PACKAGE_DIR="Assets/dev.yamachu.kurogo.ft"
+            PACKAGE_LABEL="dev.yamachu.kurogo.ft"
+          elif [[ "${{ github.event.inputs.package }}" == "core" ]]; then
+            PACKAGE_DIR="Assets/dev.yamachu.kurogo.core"
+            PACKAGE_LABEL="dev.yamachu.kurogo.core"
+          elif [[ "${{ github.event.inputs.package }}" == "ft" ]]; then
+            PACKAGE_DIR="Assets/dev.yamachu.kurogo.ft"
+            PACKAGE_LABEL="dev.yamachu.kurogo.ft"
+          elif [[ "$REF" == "main" ]]; then
+            # Default testing to core package for main branch
+            PACKAGE_DIR="Assets/dev.yamachu.kurogo.core"
+            PACKAGE_LABEL="dev.yamachu.kurogo.core"
+          else
+            echo "Could not determine target package from ref '$REF' or workflow_dispatch input" >&2
+            exit 1
+          fi
+          echo "PACKAGE_DIR=$PACKAGE_DIR" >> "$GITHUB_ENV"
+          echo "PACKAGE_LABEL=$PACKAGE_LABEL" >> "$GITHUB_ENV"
+
+      - run: dotnet tool install --global vrchat.vpm.cli
+      - run: vpm install templates
+      - run: vpm add repo https://hai-vr.github.io/vpm-listing/index.json
+      - run: vpm add repo https://vpm.nadena.dev/vpm.json
+      - run: vpm resolve project .
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: Library
+          key: Library-${{ matrix.unity-version }}-${{ env.PACKAGE_LABEL }}-${{ hashFiles('**/Packages/manifest.json', '**/Packages/vpm-manifest.json') }}
+          restore-keys: |
+            Library-${{ matrix.unity-version }}-${{ env.PACKAGE_LABEL }}-
+            Library-${{ matrix.unity-version }}-
+
+      - name: Setup Unity CLI
+        id: unity
+        uses: yamachu/unity-cli-actions/setup-unity-cli@v1
+        with:
+          unity-version: ${{ matrix.unity-version }}
+          cache: true # 3GBぐらい消費するので注意
+
+      - name: Activate Unity Personal license
+        uses: yamachu/unity-cli-actions/activate-unity-license@v1
+        with:
+          editor-path: ${{ steps.unity.outputs.editor-path }}
+          serial: ${{ secrets.UNITY_SERIAL }}
+          username: ${{ secrets.UNITY_EMAIL }}
+          password: ${{ secrets.UNITY_PASSWORD }}
+
+      - name: Workaround for Unity Linux batchmode crunch/semaphore crashes
+        shell: bash
+        run: |
+          # https://github.com/game-ci/docker/issues/243
+          sudo sysctl -w vm.max_map_count=262144
+          sudo sysctl -w kernel.sem="250 32000 32 4096"
+
+      - name: Export Unity package
+        shell: bash
+        run: |
+          # Unity同梱のCrunchテクスチャ圧縮ライブラリがLinux上で非決定的にクラッシュすることがあるため、
+          # Crunch圧縮そのものを無効化してクラッシュの原因パスを回避する
+          # https://baba-s.hatenablog.com/entry/2022/01/14/210000
+          # https://github.com/game-ci/docker/issues/243
+          for i in 1 2 3; do
+            echo "Attempt $i"
+            if ${{ steps.unity.outputs.editor-path }} \
+              -batchmode \
+              -quit \
+              -nographics \
+              -projectPath . \
+              -overrideTextureCompression forceNoCrunchCompression \
+              -executeMethod Dev.Yamachu.Kurogo.CI.ExportUnityPackage.Export \
+              -packagePath "${{ env.PACKAGE_DIR }}" \
+              -exportPath "Artifacts/${{ env.PACKAGE_LABEL }}.unitypackage" \
+              -logFile -; then
+              exit 0
+            fi
+            echo "Attempt $i failed"
+          done
+          echo "All attempts failed" >&2
+          exit 1
+
+      - name: Create vpm package
+        shell: bash
+        run: |
+          curl -L https://github.com/yamachu/unitypackage-to-vpm/releases/download/v1.2.0/unitypackage-to-vpm-linux-x64.zip -o unitypackage-to-vpm.zip
+          unzip unitypackage-to-vpm.zip -d unitypackage-to-vpm
+          chmod +x unitypackage-to-vpm/unitypackage-to-vpm
+          ./unitypackage-to-vpm/unitypackage-to-vpm \
+            Artifacts/${{ env.PACKAGE_LABEL }} \
+            Artifacts/${{ env.PACKAGE_LABEL }}.unitypackage
+          cd Artifacts/${{ env.PACKAGE_LABEL }}
+          zip -r ../${{ env.PACKAGE_LABEL }}.zip .
+          cd ../..
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ env.PACKAGE_LABEL }}-artifacts
+          path: |
+            Artifacts/*.unitypackage
+            Artifacts/*.zip
+
+      - name: Upload assets to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          files: |
+            Artifacts/*.unitypackage
+            Artifacts/*.zip
+          fail_on_unmatched_files: true
+          generate_release_notes: true
